@@ -1,55 +1,61 @@
-// App.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-import TodoList from './components/TodoList';
-
+import { View, Text, TextInput, Button, FlatList } from 'react-native';
 const App = () => {
-  const [todoText, setTodoText] = useState('');
-  const [todos, setTodos] = useState([]);
-
-  const addTodo = () => {
-    if (todoText.trim() !== '') {
-      // Create a new todo object with a unique ID
-      const newTodo = { id: Date.now(), text: todoText };
-      // Add the new todo to the todos array
-      setTodos([...todos, newTodo]);
-      
-      setTodoText('');
+  const [task, setTask] = useState('');
+  const [tasks, setTasks] = useState([]);
+  const [editIndex, setEditIndex] = useState(null);
+  const addTask = () => {
+    if (task) {
+      if (editIndex !== null) {
+        const updatedTasks = [...tasks];
+        updatedTasks[editIndex] = task;
+        setTasks(updatedTasks);
+        setEditIndex(null);
+      } else {
+        setTasks([...tasks, task]);
+      }
+      setTask('');
     }
   };
-
+  const editTask = (index) => {
+    setTask(tasks[index]);
+    setEditIndex(index);
+  };
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Todo App</Text>
+    <View style={{ padding: '27%' }}>
+      <Text style={{ fontSize: 24, marginBottom: 20 , alignSelf: 'center'}}>To-Do List</Text>
       <TextInput
-        style={styles.input}
-        placeholder="Add a todo"
-        onChangeText={(text) => setTodoText(text)}
-        value={todoText}
+        placeholder="Enter a task"
+        value={task}
+        onChangeText={(text) => setTask(text)}
+        style={{ marginBottom: 10, padding: 10, borderStyle: 'solid', borderWidth: 1, alignItems: 'center' }}
       />
-      <Button title="Add" onPress={addTodo} />
-      <TodoList todos={todos} />
+      <Button title={editIndex !== null ? "Update Task" : "Add Task"} onPress={addTask} />
+      <FlatList
+        data={tasks}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item, index }) => (
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+            <Text>{item}</Text>
+            <View style={{ flexDirection: 'row' }}>
+              <Button
+                title="Edit"
+                onPress={() => editTask(index)}
+                style={{ marginRight: 10 }}
+              />
+              <Button
+                title="Remove"
+                onPress={() => {
+                  const updatedTasks = [...tasks];
+                  updatedTasks.splice(index, 1);
+                  setTasks(updatedTasks);
+                }}
+              />
+            </View>
+          </View>
+        )}
+      />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 16,
-    padding: 8,
-  },
-});
-
 export default App;
